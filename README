@@ -1,0 +1,17 @@
+#Install Python virtual Env
+
+sudo apt-get install -y python3-venv
+
+#Activate venv
+
+python3 -m venv myenv 
+source myenv/bin/activate
+
+#Install packages needed by the script
+pip install -U weasyprint requests importlib_resources pdfkit edgartools
+
+#now run the script [example]
+
+python3 <directory_where_the_python_script_is>/pull.py --count=16 DDOG
+
+#Add the PDFs to NotebookLM - create Notebook for each Ticker, that way it is clean when you ask questions and Enjoy!!
