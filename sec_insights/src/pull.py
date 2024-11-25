@@ -5,10 +5,14 @@ import os
 import requests
 import pdfkit
 import datetime
-import tempfile
+import shutil
 from edgar import Company, Filing, set_identity
 
 from sec_insights.utils.logger import configure_logger
+
+if not shutil.which("wkhtmltopdf"):
+    print("wkhtmltopdf not found! Please install it.")
+    exit(1)
 
 logger = configure_logger(
     log_file_name="sec_pull_{}.log".format(
@@ -29,13 +33,10 @@ def process_filings(ticker, count):
     # Set user-agent for requests
     user_agent = "Fintwit Developer (fintwit.dev@gmail.com)"
     set_identity("fintwit.dev@gmail.com")
-    headers = {'User-Agent': user_agent}
+    options = { 'custom-header': [('User-Agent', user_agent)] }
 
     try:
-        # Initialize company and get filings
-        company = Company(ticker)
-        filings = company.get_filings(form="8-K").latest(count)
-
+        filings = Company(ticker).get_filings(form="8-K").latest(count)
         logger.info(f"Filings for Company = {filings.company_name}, CIK = {filings.cik}\n")
 
         for filing in filings:
@@ -46,41 +47,21 @@ def process_filings(ticker, count):
                 filing_date=filing.filing_date,
                 accession_no=filing.accession_no
             )
-            attachments = filing_details.attachments
-            exhibits = attachments.exhibits
-
-            # Filter for specific document type
-            results = exhibits.query("document_type in ['EX-99.1']")
+            results = filing_details.attachments.exhibits.query("document_type in ['EX-99.1', 'EX-99.01']")
 
             for result in results:
-                logger.info(f"Filing Date: {filing.filing_date}, Document URL: {result.url}")
+                pdf_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "filings", ticker))
+                os.makedirs(pdf_dir, exist_ok=True)
+                pdf_filename = f"{ticker}_{str(filing.filing_date).replace('-', '')}.pdf"
+    
                 try:
-                    # Download the document
-                    response = requests.get(result.url, headers=headers)
-                    if response.status_code == 200:
-                        # Use tempfile to manage temporary files
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=".htm") as temp_html_file:
-                            temp_html_file.write(response.text.encode('utf-8'))
-                            temp_html_file_path = temp_html_file.name
-                            pdf_filename = f"{ticker}_{str(filing.filing_date).replace('-', '')}.pdf"
-
-                            logger.info(f"Converting {temp_html_file_path} to {pdf_filename}")
-
-                            # Convert HTML to PDF
-                            try:
-                                pdfkit.from_file(temp_html_file_path, pdf_filename)
-                                logger.info(f"Converted {temp_html_file_path} to {pdf_filename}")
-                            except OSError as e:
-                                logger.error(f"Error during conversion: {e}")
-                            except Exception as e:
-                                logger.error(f"Unexpected error during conversion: {e}")
-
-                            # Clean up temporary HTML file
-                            os.remove(temp_html_file_path)
-                    else:
-                        logger.error(f"Failed to download the document, status code: {response.status_code}")
+                    logger.info(f"Fetching: {result.url} -> {pdf_filename}")
+                    pdfkit.from_url(result.url, os.path.join(pdf_dir, pdf_filename), options=options)
+                    logger.info(f"Successfully converted {result.url} -> {pdf_filename}")
+                except OSError as e:
+                    logger.error(f"OS error while processing URL {result.url}: {e}")
                 except Exception as e:
-                    logger.error(f"Error while processing filing {filing.filing_date}: {e}")
+                    logger.error(f"Unexpected error while processing URL {result.url}: {e}")
     except Exception as e:
         logger.error(f"Error fetching filings for Ticker: {ticker}: {e}")
 
