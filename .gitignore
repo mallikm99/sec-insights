@@ -31,5 +31,5 @@ build/
 .ipynb_checkpoints/
 
 # assets
-filings/
+assets/
 *.pdf

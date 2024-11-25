@@ -1,17 +1,72 @@
-#Install Python virtual Env
+# SEC Filings Processor
 
-sudo apt-get install -y python3-venv
+This Python script is designed to automate the process of fetching and converting SEC filings for a given company ticker symbol. It processes filings of a specified form type (default: "8-K") and saves the corresponding exhibits (EX-99.1, EX-99.01) as PDF files. The script can handle individual tickers or all tickers listed in a configuration file.
 
-#Activate venv
+## Features
 
-python3 -m venv myenv 
-source myenv/bin/activate
+- Fetch and process the latest SEC filings for a specific company ticker.
+- Convert specified exhibits (EX-99.1, EX-99.01) from filings into PDF format.
+- Save PDFs into a structured directory.
+- Skip already pulled filings to prevent duplication.
+- Support for processing filings for all tickers in a configuration file.
+- Logging for process tracking and error handling.
 
-#Install packages needed by the script
-pip install -U weasyprint requests importlib_resources pdfkit edgartools
+## Requirements
 
-#now run the script [example]
+1. **Python 3.x**: Ensure that Python 3 is installed on your system.
+2. **wkhtmltopdf**: A command-line tool used to convert HTML to PDF. This is required to generate PDFs from filing URLs.
 
-python3 <directory_where_the_python_script_is>/pull.py --count=16 DDOG
+   - Install `wkhtmltopdf` from [here](https://wkhtmltopdf.org/downloads.html).
 
-#Add the PDFs to NotebookLM - create Notebook for each Ticker, that way it is clean when you ask questions and Enjoy!!
+3. **Python Libraries**: The necessary libraries are included in the `setup.py` file for easy installation. If you don't have the required dependencies installed, run:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+    Alternatively, if using setup.py, run:
+
+    ```bash
+    python setup.py install
+    ```
+
+4. **Master Configuration File**: The script uses a configuration file (MASTER_CONFIG) to retrieve the list of tickers for processing. The configuration file should be in JSON format with a "tickers" key.
+
+## Usage
+
+Command-Line Arguments
+--ticker: The stock ticker symbol of the company (e.g., "AAPL" for Apple).
+--count: The number of filings to process for the given ticker (default is 2).
+--form: The SEC form type to process (default is "8-K").
+--all: Process filings for all tickers listed in the MASTER_CONFIG file.
+
+## Examples
+**Process filings for a single ticker**:
+```bash
+python sec_pull.py --ticker AAPL --count 5 --form 8-K
+```
+This command fetches the latest 5 SEC 8-K filings for Apple (AAPL) and converts any relevant exhibits into PDF format.
+
+**Process filings for all tickers in the configuration file**:
+```bash
+python sec_pull.py --all --count 5 --form 8-K
+```
+This command will process filings for all tickers listed in the MASTER_CONFIG file, fetching the latest 5 SEC 8-K filings for each ticker.
+
+## Directory Structure
+The script saves the PDFs in a directory structure like:
+
+```php
+/assets
+  /<ticker>
+    /<form>
+      /YYYY-MM-DD
+        <ticker>_YYYYMMDD_<accession_no>.pdf
+```
+For example, filings for Apple would be saved in:
+```bash
+/assets/AAPL/8-K/2024-11-01/AAPL_20241101_0000320193-24-000001.pdf
+```
+
+## Contributing
+If you find any bugs or have suggestions for improvements, feel free to open an issue or submit a pull request.
