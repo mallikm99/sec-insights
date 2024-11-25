@@ -1,0 +1,7 @@
+weasyprint==53.0
+requests>=2.25
+importlib_resources>=5.12
+pdfkit
+edgartools>=1.0.0
+pytest>=7.0.0     
+flake8   
