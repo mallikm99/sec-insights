@@ -48,7 +48,7 @@ for f in filings:
     attachments = filing.attachments
     exhibits = attachments.exhibits
     #print(exhibits)
-    results = exhibits.query("document_type in ['EX-99.1']")
+    results = exhibits.query("document_type in ['EX-99.1', 'EX-99.01']")
     for r in results:
       print("Filing Date = ",f.filing_date, r.url)
       response = requests.get(r.url, headers=headers)
