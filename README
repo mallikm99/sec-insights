@@ -11,9 +11,10 @@ source myenv/bin/activate
 pip install -r requirements.txt
 
 #export PYTHONPATH
+export PYTHONPATH=.
 
 #now run the script [example]
 
-python3 <directory_where_the_python_script_is>/pull.py --count=16 DDOG
+python3 sec_insights/src/pull.py --count=16 DDOG
 
 #Add the PDFs to NotebookLM - create Notebook for each Ticker, that way it is clean when you ask questions and Enjoy!!
