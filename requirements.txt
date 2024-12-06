@@ -3,6 +3,6 @@ requests>=2.31
 importlib_resources>=5.12
 argparse==1.4.0
 pdfkit==1.0.0
-edgartools>=4.0.0
+edgartools
 pytest>=7.0.0     
 flake8   

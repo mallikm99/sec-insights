@@ -8,7 +8,9 @@ python3 -m venv myenv
 source myenv/bin/activate
 
 #Install packages needed by the script
-pip install -U weasyprint requests importlib_resources pdfkit edgartools
+pip install -r requirements.txt
+
+#export PYTHONPATH
 
 #now run the script [example]
 
